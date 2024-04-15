@@ -5,13 +5,32 @@ class EmployeeModel:
         self.db = Database("Employee.db")
 
     def fetch_all_employees(self):
-        return self.db.fetch()
+        conn = self.db.create_connection()  # Create a new connection
+        cur = conn.cursor()  # Create a new cursor
+        cur.execute("SELECT * FROM employees")
+        rows = cur.fetchall()
+        conn.close()  # Close the connection
+        return rows
 
     def insert_employee(self, name, age, doj, email, gender, contact, address):
-        self.db.insert(name, age, doj, email, gender, contact, address)
+        conn = self.db.create_connection()  # Create a new connection
+        cur = conn.cursor()  # Create a new cursor
+        cur.execute("INSERT INTO employees (name, age, doj, email, gender, contact, address) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (name, age, doj, email, gender, contact, address))
+        conn.commit()  # Commit the transaction
+        conn.close()  # Close the connection
 
     def update_employee(self, id, name, age, doj, email, gender, contact, address):
-        self.db.update(id, name, age, doj, email, gender, contact, address)
+        conn = self.db.create_connection()  # Create a new connection
+        cur = conn.cursor()  # Create a new cursor
+        cur.execute("UPDATE employees SET name=?, age=?, doj=?, email=?, gender=?, contact=?, address=? WHERE id=?",
+                    (name, age, doj, email, gender, contact, address, id))
+        conn.commit()  # Commit the transaction
+        conn.close()  # Close the connection
 
     def delete_employee(self, id):
-        self.db.remove(id)
+        conn = self.db.create_connection()  # Create a new connection
+        cur = conn.cursor()  # Create a new cursor
+        cur.execute("DELETE FROM employees WHERE id=?", (id,))
+        conn.commit()  # Commit the transaction
+        conn.close()  # Close the connection

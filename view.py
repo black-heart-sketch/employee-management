@@ -1,14 +1,11 @@
+import requests
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
-from controller import EmployeeController
 
 class EmployeeView:
     def __init__(self, root):
         self.root = root
-        self.controller = EmployeeController()
-        self.db = self.controller.model  # Accessing the model instance from the controller
-
         self.root.title("Employee Management System")
         self.root.geometry("1920x1080+0+0")
         self.root.config(bg="#2c3e50")
@@ -101,7 +98,7 @@ class EmployeeView:
         self.tv.bind("<ButtonRelease-1>", self.getData)
         self.tv.pack(fill=X)
 
-        self.dispalyAll()
+        self.displayAll()
 
     def getData(self, event):
         selected_row = self.tv.focus()
@@ -117,34 +114,83 @@ class EmployeeView:
         self.txtAddress.delete(1.0, END)
         self.txtAddress.insert(END, row[7])
 
-    def dispalyAll(self):
+    def displayAll(self):
         self.tv.delete(*self.tv.get_children())
-        for row in self.db.fetch_all_employees():  # Corrected method name
-            self.tv.insert("", END, values=row)
+        try:
+            response = requests.get("http://localhost:5000/employees")  # Sending GET request to fetch all employees
+            if response.status_code == 200:
+                employees = response.json()
+                for employee in employees:
+                    self.tv.insert("", END, values=employee)
+            else:
+                messagebox.showerror("Error", f"Failed to fetch employees: {response.status_code}")
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred while fetching employees: {str(e)}")
+            print("Error:", str(e))
 
 
     def add_employee(self):
         if self.txtName.get() == "" or self.txtAge.get() == "" or self.txtDoj.get() == "" or self.txtEmail.get() == "" or self.comboGender.get() == "" or self.txtContact.get() == "" or self.txtAddress.get(1.0, END) == "":
-            messagebox.showerror("Erorr in Input", "Please Fill All the Details")
+            messagebox.showerror("Error in Input", "Please Fill All the Details")
             return
-        self.db.insert_employee(self.txtName.get(), self.txtAge.get(), self.txtDoj.get(), self.txtEmail.get(), self.comboGender.get(), self.txtContact.get(), self.txtAddress.get(1.0, END))
-        messagebox.showinfo("Success", "Record Inserted")
-        self.clearAll()
-        self.dispalyAll()
+
+        data = {
+            "name": self.txtName.get(),
+            "age": self.txtAge.get(),
+            "doj": self.txtDoj.get(),
+            "email": self.txtEmail.get(),
+            "gender": self.comboGender.get(),
+            "contact": self.txtContact.get(),
+            "address": self.txtAddress.get(1.0, END)
+        }
+
+        response = requests.post("http://localhost:5000/employees", json=data)  # Sending POST request to add an employee
+        if response.status_code == 200:
+            messagebox.showinfo("Success", "Record Inserted")
+            self.clearAll()
+            self.displayAll()
+        else:
+            messagebox.showerror("Error", "Failed to insert record")
 
     def update_employee(self):
         if self.txtName.get() == "" or self.txtAge.get() == "" or self.txtDoj.get() == "" or self.txtEmail.get() == "" or self.comboGender.get() == "" or self.txtContact.get() == "" or self.txtAddress.get(1.0, END) == "":
-            messagebox.showerror("Erorr in Input", "Please Fill All the Details")
+            messagebox.showerror("Error in Input", "Please Fill All the Details")
             return
-        self.db.update(row[0], self.txtName.get(), self.txtAge.get(), self.txtDoj.get(), self.txtEmail.get(), self.comboGender.get(), self.txtContact.get(), self.txtAddress.get(1.0, END))
-        messagebox.showinfo("Success", "Record Update")
-        self.clearAll()
-        self.dispalyAll()
+
+        if not row:
+            messagebox.showerror("Error", "Please select an employee to update")
+            return
+
+        data = {
+            "name": self.txtName.get(),
+            "age": self.txtAge.get(),
+            "doj": self.txtDoj.get(),
+            "email": self.txtEmail.get(),
+            "gender": self.comboGender.get(),
+            "contact": self.txtContact.get(),
+            "address": self.txtAddress.get(1.0, END)
+        }
+
+        response = requests.put(f"http://localhost:5000/employees/{row[0]}", json=data)  # Sending PUT request to update an employee
+        if response.status_code == 200:
+            messagebox.showinfo("Success", "Record Updated")
+            self.clearAll()
+            self.displayAll()
+        else:
+            messagebox.showerror("Error", "Failed to update record")
 
     def delete_employee(self):
-        self.db.remove(row[0])
-        self.clearAll()
-        self.dispalyAll()
+        if not row:
+            messagebox.showerror("Error", "Please select an employee to delete")
+            return
+
+        response = requests.delete(f"http://localhost:5000/employees/{row[0]}")  # Sending DELETE request to delete an employee
+        if response.status_code == 200:
+            messagebox.showinfo("Success", "Record Deleted")
+            self.clearAll()
+            self.displayAll()
+        else:
+            messagebox.showerror("Error", "Failed to delete record")
 
     def clearAll(self):
         self.name.set("")
