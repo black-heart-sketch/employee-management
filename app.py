@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from controller import EmployeeController
+from controller.controller import EmployeeController
 
 app = Flask(__name__)
 employee_controller = EmployeeController()

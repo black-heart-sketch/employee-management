@@ -1,4 +1,4 @@
-from model import EmployeeModel
+from model.model import EmployeeModel
 
 class EmployeeController:
     def __init__(self):

@@ -2,16 +2,20 @@ import sqlite3
 import os
 
 
+PATH_TO_DB = os.path.join(
+    os.path.dirname(__file__),
+    "Employee.db"
+)
+
+
 
 class Database:
-    def __init__(self, db_name):
-        self.db_name = db_name
-
+    def __init__(self):
+        
+        pass
     def create_connection(self):
         try:
-            conn = sqlite3.connect(os.path.join(
-            os.path.dirname(__file__),
-            self.db_name))
+            conn = sqlite3.connect(PATH_TO_DB)
             return conn
         except sqlite3.Error as e:
             print(e)

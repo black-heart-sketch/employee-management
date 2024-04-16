@@ -1,8 +1,8 @@
-from db import Database
+from utils.db import Database
 
 class EmployeeModel:
     def __init__(self):
-        self.db = Database("Employee.db")
+        self.db = Database()
 
     def fetch_all_employees(self):
         conn = self.db.create_connection()  # Create a new connection
